@@ -580,7 +580,11 @@ def get_full_names(data: dict) -> list[str]:
     Returns:
         list[str]: List of full names.
     """
-    pass
+    return list(map(
+            lambda user: f"{user['name']['first']} {user['name']['last']}", 
+            data['results']
+        ))
+
 
 
 def get_users_by_country(data: dict, country: str) -> list[dict]:
@@ -594,7 +598,14 @@ def get_users_by_country(data: dict, country: str) -> list[dict]:
     Returns:
         list[dict]: List of dictionaries containing full name and email of matching users.
     """
-    pass
+    return list(map(
+        lambda user: {
+            'name': f"{user['name']['first']} {user['name']['last']}",
+            'email': user['email']
+            },
+        filter(lambda user: user['location']['country'] == country, data['results'])
+        ))
+
 
 
 def count_users_by_gender(data: dict) -> dict:
@@ -607,7 +618,12 @@ def count_users_by_gender(data: dict) -> dict:
     Returns:
         dict: Dictionary with gender as keys and count as values.
     """
-    pass
+
+    male = len(list(filter(lambda user: user['gender'].lower() == 'male', data['results'])))
+    female = len(list(filter(lambda user: user['gender'].lower() == 'female', data['results'])))
+    
+    return {'male': male, 'female': female}
+
 
 
 def get_emails_of_older_than(data: dict, age: int) -> list[str]:
@@ -621,7 +637,12 @@ def get_emails_of_older_than(data: dict, age: int) -> list[str]:
     Returns:
         list[str]: List of email addresses.
     """
-    pass
+
+    return list(map(
+        lambda user: user['email'],
+        filter(lambda user: user['dob']['age'] > age, data['results'])
+        ))
+
 
 
 def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
@@ -635,7 +656,13 @@ def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
     Returns:
         list[dict]: List of users with name and age sorted accordingly.
     """
-    pass
+    
+    name_age = map(
+        lambda user: {'name': f"{user['name']['first']} {user['name']['last']}",'age': user['dob']['age']}, 
+        data['results']
+    )
+    return sorted(name_age, key = lambda user: user['age'], reverse = descending)
+
 
 
 def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
@@ -649,7 +676,12 @@ def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
     Returns:
         list[str]: List of matching usernames.
     """
-    pass
+
+    return list(map(
+        lambda user: user["login"]["username"], 
+        filter(lambda user: user["login"]["username"].startswith(letter), data["results"])
+        ))
+
 
 
 def get_average_age(data: dict) -> float:
@@ -662,7 +694,10 @@ def get_average_age(data: dict) -> float:
     Returns:
         float: Average age.
     """
-    pass
+
+    all_ages = list(map(lambda user: user["dob"]["age"], data["results"]))
+    return sum(all_ages) / len(all_ages)
+
 
 
 def group_users_by_nationality(data: dict) -> dict:
@@ -675,7 +710,15 @@ def group_users_by_nationality(data: dict) -> dict:
     Returns:
         dict: Dictionary with nationality as keys and count as values.
     """
-    pass
+    result = {}
+
+    def add_to_result(user):
+        nat = user['nat']
+        result[nat] = result.get(nat, 0) + 1
+
+    list(map(add_to_result, data['results']))
+    return result
+
 
 
 def get_all_coordinates(data: dict) -> list[tuple[str, str]]:
@@ -688,7 +731,15 @@ def get_all_coordinates(data: dict) -> list[tuple[str, str]]:
     Returns:
         list[tuple[str, str]]: List of coordinate tuples.
     """
-    pass
+    
+    return list(map(
+        lambda user: (
+            user['location']['coordinates']['latitude'],
+            user['location']['coordinates']['longitude']
+        ),
+        data['results']
+    ))
+
 
 
 def get_oldest_user(data: dict) -> dict:
@@ -701,7 +752,20 @@ def get_oldest_user(data: dict) -> dict:
     Returns:
         dict: Dictionary containing 'name', 'age', and 'email' of the oldest user.
     """
-    pass
+
+    users = list(map(
+        lambda user: {
+            "name": f"{user['name']['first']} {user['name']['last']}",
+            "age": user['dob']['age'],
+            "email": user["email"]
+        },
+        data['results']
+    ))
+
+    oldest_user = max(users, key=lambda user: user['age'])
+
+    return oldest_user
+
 
 
 def find_users_in_timezone(data: dict, offset: str) -> list[dict]:
@@ -715,7 +779,21 @@ def find_users_in_timezone(data: dict, offset: str) -> list[dict]:
     Returns:
         list[dict]: List of users with full name and city.
     """
-    pass
+    filtered_users = list(filter(
+        lambda user: user['location']['timezone']['offset'] == offset,
+        data['results']
+    ))
+
+    users = list(map(
+        lambda user: {
+            "name": f"{user['name']['first']} {user['name']['last']}",
+            "city": user['location']['city']
+        },
+        filtered_users
+    ))
+
+    return users
+
 
 
 def get_registered_before_year(data: dict, year: int) -> list[dict]:
@@ -729,14 +807,96 @@ def get_registered_before_year(data: dict, year: int) -> list[dict]:
     Returns:
         list[dict]: List of users with full name and registration date.
     """
-    pass
+    filtered_users = list(filter(
+        lambda user: int(user['registered']['date'][:4]) < year,
+        data['results']
+    ))
+
+    users = list(map(
+        lambda user: {
+            "name": f"{user['name']['first']} {user['name']['last']}",
+            "registered": user['registered']['date'][:10]
+        },
+        filtered_users
+    ))
+
+    return users
+
 
 
 def run_functions() -> None:
     """
     Runs and prints results of all data processing functions for demonstration purposes.
     """
-    print("Full Names:", get_full_names(randomuser_data))
 
+    while True:
+            print("""
+=== Qaysi funksiyani tekshirib ko'ramiz? ===
+                
+    1 → get_full_names
+    2 → get_users_by_country
+    3 → count_users_by_gender
+    4 → get_emails_of_older_than
+    5 → sort_users_by_age
+    6 → get_usernames_starting_with (letter)
+    7 → get_average_age
+    8 → group_users_by_nationality
+    9 → get_all_coordinates
+    10 → get_oldest_user
+    11 → find_users_in_timezone
+    12 → get_registered_before_year  
+
+    0 → Dasturni to'xtatish!     
+        """)
+
+            choice = input("Tanlanag (faqat: 1-12 gacha): ").strip()
+
+            if choice == "1":
+                print("Full Names:", get_full_names(randomuser_data))
+            
+            elif choice == "2":
+                country = input("Input country: ").title()
+                print("By Country:", get_users_by_country(randomuser_data, country))
+
+            elif choice == "3":
+                print(count_users_by_gender(randomuser_data))
+
+            elif choice == "4":
+                age = int(input("Input Age: "))
+                print(get_emails_of_older_than(randomuser_data, age))
+
+            elif choice == "5":
+                print(sort_users_by_age(randomuser_data, descending = True))
+
+            elif choice == "6":
+                letter = input("Input letter: ")
+                print(get_usernames_starting_with(randomuser_data, letter))
+
+            elif choice == "7":
+                print(get_average_age(randomuser_data))
+
+            elif choice == "8":
+                print(group_users_by_nationality(randomuser_data))
+
+            elif choice == "9":
+                print(get_all_coordinates(randomuser_data))
+
+            elif choice == "10":
+                print(get_oldest_user(randomuser_data))
+
+            elif choice == "11":
+                offset = "+5:30"
+                print(find_users_in_timezone(randomuser_data, offset))
+
+            elif choice == "12":
+                year = 2020
+                print(get_registered_before_year(randomuser_data, year))
+
+            elif choice == "0":
+                print("Dastur to'xtatildi!")
+                break
+
+            else:
+                print("Error, Xato tanlov.")
 
 run_functions()
