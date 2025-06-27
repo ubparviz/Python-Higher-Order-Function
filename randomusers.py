@@ -855,21 +855,21 @@ def run_functions() -> None:
                 print("Full Names:", get_full_names(randomuser_data))
             
             elif choice == "2":
-                country = input("Input country: ").title()
+                country = "India"
                 print("By Country:", get_users_by_country(randomuser_data, country))
 
             elif choice == "3":
                 print(count_users_by_gender(randomuser_data))
 
             elif choice == "4":
-                age = int(input("Input Age: "))
+                age = 60
                 print(get_emails_of_older_than(randomuser_data, age))
 
             elif choice == "5":
                 print(sort_users_by_age(randomuser_data, descending = True))
 
             elif choice == "6":
-                letter = input("Input letter: ")
+                letter = "g"
                 print(get_usernames_starting_with(randomuser_data, letter))
 
             elif choice == "7":
